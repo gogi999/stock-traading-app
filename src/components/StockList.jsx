@@ -1,4 +1,5 @@
 import React, {
+  useContext,
   useEffect,
   useState,
 } from 'react';
@@ -7,12 +8,15 @@ import {
   BsFillCaretDownFill,
   BsFillCaretUpFill,
 } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
 
 import finnHub from '../apis/finnHub';
+import { WatchListContext } from '../context/watchListContext';
 
 const StockList = () => {
     const [stock, setStock] = useState([]);
-    const [watchList, setWatchList] = useState(["GOOGL", "MSFT", "AMZN"]);
+    const { watchList, deleteStock } = useContext(WatchListContext);
+    const navigate = useNavigate();
 
     const changeColor = (change) => {
         return change > 0 ? 'success' : 'danger';
@@ -53,7 +57,11 @@ const StockList = () => {
         fetchData();
 
         return () => isMounted = false;
-    }, []);
+    }, [watchList]);
+
+    const handleStockSelect = () => {
+        navigate(`detail/${symbol}`);
+    }
 
     return (
         <table className="table hover mt-5">
@@ -75,6 +83,7 @@ const StockList = () => {
                         style={{ cursor: "pointer" }}
                         key={stockData.symbol}
                         className="table-row"
+                        onClick={() => handleStockSelect(stock.symbol)}
                     >
                         <th scope="row">{stockData.symbol}</th>
                         <td>{stockData.data.c}</td>
@@ -87,7 +96,18 @@ const StockList = () => {
                         <td>{stockData.data.h}</td>
                         <td>{stockData.data.l}</td>
                         <td>{stockData.data.o}</td>
-                        <td>{stockData.data.pc}</td>
+                        <td>
+                            {stockData.data.pc} 
+                            <button 
+                                className="btn btn-danger btn-sm ml-3 d-inline-block delete-button" 
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    deleteStock(stockData?.symbol)
+                                }}
+                            >
+                                Remove
+                            </button>
+                        </td>
                     </tr>
                 ))}
             </tbody>
